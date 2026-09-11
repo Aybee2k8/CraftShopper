@@ -155,6 +155,24 @@ was therefore reported as not movable at all. It is a plain drag now. A modifier
 was never needed — `OnDragStart` fires only after the mouse moves while held, so
 a click and a drag cannot be confused.
 
+## The craft count was always 1
+
+The first version read the multiplier only from
+`ProfessionsFrame.CraftingPage.CreateMultipleInputBox`. That field sits at 1
+until the player touches it, so every list came out for one craft no matter what
+they intended. `/cshop diag` had reported `craft count readable (1)` and that
+read as a pass.
+
+The order is now `reagents.ResolveMultiplier`, which is pure and tested: an
+explicit `/cshop add 20` wins, then the profession window's field **but only
+above 1**, then the addon's own stored count, then 1. A window count of 1 is the
+player having said nothing, and must not overrule a number they did set.
+
+The general lesson, and the reason the function is pure rather than three lines
+in `Core.lua`: a wrong multiplier produces a list that looks entirely
+reasonable. There is nothing on screen to notice. Anything that silently scales
+a result belongs in a tested file.
+
 ## Branch workflow
 
 One task, one branch off `main`, one topic per PR. Never reuse a merged branch —

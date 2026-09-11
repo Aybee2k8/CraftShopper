@@ -51,6 +51,42 @@ local function slotKey(itemIDs)
   return table.concat(itemIDs, ':')
 end
 
+-- Decides how many crafts to buy for.
+--
+-- Pure, and tested, because getting this wrong is silent: the list comes out
+-- looking perfectly reasonable and is simply for the wrong number of crafts.
+-- The first version read only the profession window's field, which sits at 1
+-- until the player touches it, so every list was for one craft.
+--
+--   override    a number typed at the command, e.g. /cshop add 20. Always wins.
+--   windowCount what the profession window's craft field reads, or nil.
+--   useWindow   whether that field is allowed to speak at all.
+--   stored      the addon's own count, from the box next to the button.
+--
+-- The window only wins when it has been dialled above 1. A player who set 20
+-- there and clicked our button means 20; a player who left it alone has said
+-- nothing, and their own setting should not be overruled by a default.
+function reagents.ResolveMultiplier(override, windowCount, useWindow, stored)
+  local function clean(value)
+    value = tonumber(value)
+    if not value or value < 1 then
+      return nil
+    end
+    return math.floor(value)
+  end
+
+  local chosen = clean(override)
+
+  if not chosen and useWindow then
+    local fromWindow = clean(windowCount)
+    if fromWindow and fromWindow > 1 then
+      chosen = fromWindow
+    end
+  end
+
+  return chosen or clean(stored) or 1
+end
+
 -- Collects what a craft needs.
 --
 -- opts:

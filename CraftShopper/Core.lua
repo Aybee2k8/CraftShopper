@@ -13,6 +13,11 @@ local DEFAULTS = {
 
   subtractInventory = true,
   includeBank = true,
+  -- How many crafts to buy for. Set in the box next to the button, kept here so
+  -- it survives a relog -- a number you have to retype every session is a
+  -- number you will forget to retype.
+  craftCount = 1,
+
   useCraftCount = true,
   replaceList = false,
   announce = true,
@@ -78,7 +83,7 @@ function core.Set(key, value)
 
   db[key] = value
 
-  if key == 'showButton' and ns.ui then
+  if (key == 'showButton' or key == 'craftCount') and ns.ui then
     ns.ui.Refresh()
   end
 end
@@ -91,21 +96,12 @@ end
 -- The actual job
 --------------------------------------------------------------------------------
 
--- Puts the reagents of the open recipe onto the shopping list.
---
--- countOverride comes from `/cshop add 20` and wins over everything; otherwise
--- the craft count dialled up in the profession window is used, if the setting
--- allows it and the field could be read at all.
---
--- Names are resolved asynchronously, so the work finishes inside a callback.
--- That is not an implementation detail that can be avoided: Auctionator
--- searches by item name, and an uncached reagent has no name yet. Writing the
--- list without waiting would drop exactly the reagents the player has never
--- owned -- which are the ones they are most likely to be shopping for.
---
 -- Reads the open recipe and works out what it needs. Shared by Send and
 -- Preview so that what you are shown is computed by the same code that does
 -- the buying, and not by a second implementation that can disagree with it.
+--
+-- countOverride comes from `/cshop add 20` and wins over everything else; see
+-- reagents.ResolveMultiplier for the rest of the order.
 --
 -- Returns nil plus a message to print when there is nothing to work with.
 local function collectOpenRecipe(countOverride)
@@ -116,11 +112,12 @@ local function collectOpenRecipe(countOverride)
 
   recipeName = recipeName or '?'
 
-  local multiplier = tonumber(countOverride)
-  if not multiplier and core.Get('useCraftCount') then
-    multiplier = compat.GetCraftCount()
-  end
-  multiplier = multiplier or 1
+  local multiplier = reagents.ResolveMultiplier(
+    countOverride,
+    compat.GetCraftCount(),
+    core.Get('useCraftCount'),
+    core.Get('craftCount')
+  )
 
   local includeBank = core.Get('includeBank')
 
@@ -179,6 +176,13 @@ function core.Preview(countOverride)
   end)
 end
 
+-- Puts the reagents of the open recipe onto the shopping list.
+--
+-- Names are resolved asynchronously, so the work finishes inside a callback.
+-- That is not an implementation detail that can be avoided: Auctionator
+-- searches by item name, and an uncached reagent has no name yet. Writing the
+-- list without waiting would drop exactly the reagents the player has never
+-- owned -- which are the ones they are most likely to be shopping for.
 function core.Send(countOverride)
   if not shopping.IsAvailable() then
     say(L.NO_AUCTIONATOR)
@@ -310,6 +314,12 @@ local function handleSlash(input)
     core.Send(tonumber(rest))
   elseif command == 'preview' or command == 'show' then
     core.Preview(tonumber(rest))
+  elseif command == 'count' then
+    local value = tonumber(rest)
+    if value and value >= 1 then
+      core.Set('craftCount', math.floor(value))
+    end
+    say(L.COUNT_CHANGED:format(core.Get('craftCount')))
   elseif command == 'list' then
     if rest == '' then
       say(L.LIST_CHANGED:format(core.Get('listName')))

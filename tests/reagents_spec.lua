@@ -87,6 +87,31 @@ check('not-required stands in too', false, reagents.IsBasicSlot(slot(OPTIONAL, 1
 check('nil is not a slot', false, reagents.IsBasicSlot(nil, BASIC))
 
 --------------------------------------------------------------------------------
+print('how many crafts to buy for')
+--------------------------------------------------------------------------------
+
+local resolve = reagents.ResolveMultiplier
+
+-- The bug this replaces: only the profession window's field was read, and that
+-- field sits at 1 until the player touches it. Every list came out for one
+-- craft, whatever the player had set.
+check('a stored count is used', 20, resolve(nil, 1, true, 20))
+check('a window count of 1 does not override it', 20, resolve(nil, 1, true, 20))
+check('nothing set at all is one craft', 1, resolve(nil, nil, true, nil))
+
+check('a dialled-up window count wins', 15, resolve(nil, 15, true, 20))
+check('unless the window is not allowed to speak', 20, resolve(nil, 15, false, 20))
+
+check('an explicit override beats the window', 5, resolve(5, 15, true, 20))
+check('and beats the stored count', 5, resolve(5, nil, false, 20))
+
+check('fractions are floored', 7, resolve(7.9, nil, false, 1))
+check('zero is not a craft count', 20, resolve(0, nil, true, 20))
+check('negatives are not either', 20, resolve(-3, nil, true, 20))
+check('a nonsense stored value falls back to one', 1, resolve(nil, nil, true, 'twenty'))
+check('a nonsense window value is ignored', 20, resolve(nil, 'lots', true, 20))
+
+--------------------------------------------------------------------------------
 print('collecting')
 --------------------------------------------------------------------------------
 

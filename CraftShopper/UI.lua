@@ -22,6 +22,7 @@ ns.ui = ui
 local DEFAULT_POINT = { 'TOPLEFT', 'ProfessionsFrame', 'TOPRIGHT', 4, -28 }
 
 local button
+local countBox
 
 local function core()
   return ns.core
@@ -120,6 +121,73 @@ local function onDragStop(self)
   applyPosition()
 end
 
+-- The craft-count box, hanging under the button.
+--
+-- It is a child of the button so that dragging the button takes it along: one
+-- thing to move, one position to remember. An EditBox handles its own mouse
+-- input, so clicking into it does not also press the button behind it.
+local function createCountBox(owner)
+  local box = CreateFrame('EditBox', nil, owner, 'InputBoxTemplate')
+
+  box:SetPoint('TOPLEFT', owner, 'BOTTOMLEFT', 6, -4)
+  box:SetSize(44, 20)
+  box:SetAutoFocus(false)
+  box:SetNumeric(true)
+  box:SetMaxLetters(4)
+  box:SetJustifyH('CENTER')
+
+  local label = box:CreateFontString(nil, 'ARTWORK', 'GameFontHighlightSmall')
+  label:SetPoint('LEFT', box, 'RIGHT', 4, 0)
+  label:SetText(L.COUNT_LABEL)
+
+  local function commit(self)
+    local value = tonumber(self:GetText())
+
+    -- An empty or nonsense box means one craft, not zero and not an error. The
+    -- box is then corrected on screen, so what it shows is always what the next
+    -- click will use.
+    if not value or value < 1 then
+      value = 1
+    end
+    value = math.floor(value)
+
+    if core() then
+      core().Set('craftCount', value)
+    end
+
+    self:SetText(tostring(value))
+    self:ClearFocus()
+  end
+
+  box:SetScript('OnEnterPressed', commit)
+  box:SetScript('OnEditFocusLost', commit)
+  box:SetScript('OnEscapePressed', function(self)
+    self:SetText(tostring((core() and core().Get('craftCount')) or 1))
+    self:ClearFocus()
+  end)
+
+  box:SetScript('OnEnter', function(self)
+    local tooltip = _G.GameTooltip
+    if not tooltip then
+      return
+    end
+
+    tooltip:SetOwner(self, 'ANCHOR_RIGHT')
+    tooltip:SetText(L.COUNT_TOOLTIP_TITLE, 1, 1, 1)
+    tooltip:AddLine(L.COUNT_TOOLTIP_LINE, nil, nil, nil, true)
+
+    if core() and core().Get('useCraftCount') then
+      tooltip:AddLine(L.COUNT_TOOLTIP_WINDOW, 0.6, 0.6, 0.6, true)
+    end
+
+    tooltip:Show()
+  end)
+
+  box:SetScript('OnLeave', onLeave)
+
+  return box
+end
+
 local function create(parent)
   local frame = CreateFrame('Button', 'CraftShopperButton', parent, 'UIPanelButtonTemplate')
 
@@ -149,6 +217,8 @@ local function create(parent)
       core().Send()
     end
   end)
+
+  countBox = createCountBox(frame)
 
   return frame
 end
@@ -185,6 +255,12 @@ function ui.Refresh()
     button:Show()
   else
     button:Hide()
+  end
+
+  -- Kept in step with the setting rather than owning it, so /cshop count and
+  -- the box cannot disagree about what the next click will buy for.
+  if countBox and not countBox:HasFocus() then
+    countBox:SetText(tostring((core() and core().Get('craftCount')) or 1))
   end
 end
 

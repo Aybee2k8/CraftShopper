@@ -13,6 +13,12 @@ local enUS = {
   BUTTON_TOOLTIP_LINE = 'Adds the reagents of this recipe to the Auctionator shopping list %q.',
   BUTTON_TOOLTIP_DRAG = 'Drag to move the button. /cshop reset puts it back.',
 
+  COUNT_LABEL = 'crafts',
+  COUNT_TOOLTIP_TITLE = 'How many crafts',
+  COUNT_TOOLTIP_LINE = 'The reagent counts are multiplied by this. Kept across sessions.',
+  COUNT_TOOLTIP_WINDOW = 'If you set the profession window\'s own count above 1, that wins.',
+  COUNT_CHANGED = 'Buying for %d craft(s).',
+
   NO_AUCTIONATOR = 'Auctionator was not found. Install or enable it -- '
     .. 'CraftShopper has nothing to write to without it.',
   NO_RECIPE = 'No recipe is open. Select one in the profession window first.',
@@ -34,7 +40,7 @@ local enUS = {
   OPTIONS_LIST_NAME = 'Shopping list name',
   OPTIONS_SUBTRACT = 'Subtract what you already own',
   OPTIONS_INCLUDE_BANK = 'Count bank and reagent bank as owned',
-  OPTIONS_MULTIPLIER = 'Use the craft count from the profession window',
+  OPTIONS_MULTIPLIER = 'Let the profession window\'s own count win when above 1',
   OPTIONS_REPLACE = 'Replace the list instead of adding to it',
   OPTIONS_ANNOUNCE = 'Print what was added to chat',
   OPTIONS_SHOW_BUTTON = 'Show the button in the profession window',
@@ -44,6 +50,7 @@ local enUS = {
   SLASH_HELP = {
     '/cshop add [count] -- send the open recipe to the shopping list',
     '/cshop preview [count] -- show needs, stock and shortfall without buying',
+    '/cshop count <n> -- buy for n crafts (same as the box next to the button)',
     '/cshop list <name> -- set the shopping list to write to',
     '/cshop own -- toggle subtracting what you already own',
     '/cshop bank -- toggle counting bank and reagent bank',
@@ -72,6 +79,12 @@ local deDE = {
   BUTTON_TOOLTIP_LINE = 'Setzt die Zutaten dieses Rezepts auf die Auctionator-Einkaufsliste %q.',
   BUTTON_TOOLTIP_DRAG = 'Ziehen verschiebt den Knopf. /cshop reset setzt ihn zurueck.',
 
+  COUNT_LABEL = 'Herstellungen',
+  COUNT_TOOLTIP_TITLE = 'Anzahl der Herstellungen',
+  COUNT_TOOLTIP_LINE = 'Die Zutatenmengen werden damit multipliziert. Bleibt ueber Sitzungen erhalten.',
+  COUNT_TOOLTIP_WINDOW = 'Steht die Anzahl im Berufefenster ueber 1, gewinnt diese.',
+  COUNT_CHANGED = 'Einkauf fuer %d Herstellung(en).',
+
   NO_AUCTIONATOR = 'Auctionator wurde nicht gefunden. Ohne das Addon hat '
     .. 'CraftShopper nichts, wohin es schreiben koennte.',
   NO_RECIPE = 'Es ist kein Rezept geoeffnet. Waehle zuerst eines im Berufefenster aus.',
@@ -94,7 +107,7 @@ local deDE = {
   OPTIONS_LIST_NAME = 'Name der Einkaufsliste',
   OPTIONS_SUBTRACT = 'Vorhandenen Bestand abziehen',
   OPTIONS_INCLUDE_BANK = 'Bank und Reagenzienbank mitzaehlen',
-  OPTIONS_MULTIPLIER = 'Anzahl aus dem Berufefenster uebernehmen',
+  OPTIONS_MULTIPLIER = 'Anzahl aus dem Berufefenster gewinnt, wenn sie ueber 1 steht',
   OPTIONS_REPLACE = 'Liste ersetzen statt ergaenzen',
   OPTIONS_ANNOUNCE = 'Hinzugefuegtes im Chat ausgeben',
   OPTIONS_SHOW_BUTTON = 'Knopf im Berufefenster anzeigen',
@@ -104,6 +117,7 @@ local deDE = {
   SLASH_HELP = {
     '/cshop add [anzahl] -- offenes Rezept auf die Einkaufsliste setzen',
     '/cshop preview [anzahl] -- Bedarf, Bestand und Fehlmenge zeigen, ohne zu kaufen',
+    '/cshop count <n> -- fuer n Herstellungen kaufen (wie das Feld am Knopf)',
     '/cshop list <name> -- Einkaufsliste festlegen, in die geschrieben wird',
     '/cshop own -- Abziehen des eigenen Bestands umschalten',
     '/cshop bank -- Bank und Reagenzienbank mitzaehlen umschalten',

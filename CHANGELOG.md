@@ -13,6 +13,9 @@ First version.
 - Adds to the list rather than replacing it, leaving rows the player put there
   untouched.
 - Settings panel, slash commands (`/cshop`), and `/cshop diag`.
+- Craft-count box under the button, kept across sessions, so the list scales to
+  however many you mean to make. The profession window's own count still wins
+  when it has been dialled above 1.
 - `/cshop preview`: need, stock and shortfall for the open recipe, without
   writing to any list.
 - German and English.

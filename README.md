@@ -16,8 +16,9 @@ the right quantities next to them.
   choices you make per craft, not things a recipe needs, so they are left out.
 - **Subtracts what you already own** — bags, and by default the bank, reagent
   bank and warband bank too. Only the shortfall goes on the list.
-- **Multiplies by the craft count** you dialled up in the profession window, so
-  20× a recipe puts 20× the reagents on the list.
+- **Buys for as many crafts as you want.** Type the number into the box under
+  the button — it sticks across sessions. If you dial the profession window's
+  own count above 1, that wins for that click.
 - **Adds to the list rather than replacing it.** Click through five recipes and
   you get one list with the totals. Rows you put there yourself are left exactly
   as they were.
@@ -33,13 +34,15 @@ works too — the folder inside it is already named correctly.
 
 ## Using it
 
-The button sits just outside the top-right corner of the profession window.
-Drag it to move it; `/cshop reset` puts it back.
+The button sits just outside the top-right corner of the profession window, with
+the craft-count box under it. Drag the button to move both; `/cshop reset` puts
+them back.
 
 | Command | |
 | --- | --- |
 | `/cshop` or `/cshop add` | send the open recipe to the shopping list |
 | `/cshop add 20` | …as if you were crafting it 20 times |
+| `/cshop count 20` | buy for 20 crafts from now on (same as the box) |
 | `/cshop preview` | show needs, stock and shortfall without buying anything |
 | `/cshop list <name>` | write to a differently named shopping list |
 | `/cshop own` | toggle subtracting what you already own |
