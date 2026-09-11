@@ -76,10 +76,14 @@ local function onLeave()
   end
 end
 
+-- Plain drag, no modifier.
+--
+-- It was shift-drag, on the theory that a modifier protects the click. It does
+-- not need protecting: OnDragStart only fires once the mouse has moved while
+-- held, so a click and a drag cannot be confused. What the modifier did achieve
+-- was a button nobody could move without reading the tooltip first, which is
+-- how it was reported.
 local function onDragStart(self)
-  if not _G.IsShiftKeyDown or not _G.IsShiftKeyDown() then
-    return
-  end
   self:StartMoving()
 end
 

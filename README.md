@@ -34,12 +34,13 @@ works too — the folder inside it is already named correctly.
 ## Using it
 
 The button sits just outside the top-right corner of the profession window.
-Shift-drag moves it; `/cshop reset` puts it back.
+Drag it to move it; `/cshop reset` puts it back.
 
 | Command | |
 | --- | --- |
 | `/cshop` or `/cshop add` | send the open recipe to the shopping list |
 | `/cshop add 20` | …as if you were crafting it 20 times |
+| `/cshop preview` | show needs, stock and shortfall without buying anything |
 | `/cshop list <name>` | write to a differently named shopping list |
 | `/cshop own` | toggle subtracting what you already own |
 | `/cshop bank` | toggle counting the bank and reagent bank |
@@ -50,10 +51,17 @@ Shift-drag moves it; `/cshop reset` puts it back.
 
 Settings are also in the interface options, under **CraftShopper**.
 
+**If nothing lands on the list**, the likely answer is that you already own the
+reagents — CraftShopper subtracts your stock, so a recipe you have the mats for
+adds nothing. `/cshop preview` shows the arithmetic: what the recipe needs, what
+you are holding, what is left. `/cshop own` turns the subtraction off if you
+would rather buy regardless.
+
 `/cshop diag` is the first thing to run when something looks wrong. It prints
 which Blizzard and Auctionator APIs it found, whether a recipe is open, and what
-craft count it read. Run it with a profession window open — most of what it
-checks only exists once `Blizzard_Professions` has loaded.
+craft count it read. Run it with a profession window open and a recipe
+selected — most of what it checks only exists once `Blizzard_Professions` has
+loaded, and the "a schematic form is open" line reports missing otherwise.
 
 ## Decisions worth knowing about
 

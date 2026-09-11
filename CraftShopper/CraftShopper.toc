@@ -2,6 +2,11 @@
 # the addon loads on either without a second TOC -- comma-delimited interface
 # versions have been supported since 10.2.7.
 ## Interface: 120100, 120105
+# The same numbers again, as a custom field. GetAddOnMetadata only answers for
+# a fixed set of fields plus X- ones, and "Interface" is not among them -- so
+# /cshop diag could not report what the addon declares and printed "?" on a
+# live client. CI asserts the two lines agree.
+## X-Interface: 120100, 120105
 ## Title: CraftShopper
 ## Notes: Sends the reagents of the open profession recipe to an Auctionator shopping list.
 ## Notes-deDE: Schickt die Zutaten des geoeffneten Rezepts auf eine Auctionator-Einkaufsliste.

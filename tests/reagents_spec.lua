@@ -19,6 +19,10 @@ loadfile('CraftShopper/Reagents.lua')('CraftShopper', ns)
 
 local reagents = ns.reagents
 
+-- Stand-ins, not the client's real numbers. A live 12.1.0 client reports
+-- Enum.CraftingReagentType.Basic == 1, which is why Reagents.lua is handed the
+-- value rather than hardcoding one: the commonly repeated 0 is wrong, and the
+-- tests pass either way precisely because nothing here assumes a number.
 local BASIC = 0
 local OPTIONAL = 2
 

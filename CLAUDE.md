@@ -104,19 +104,56 @@ oversight — say so in the PR.
 - **The button does not disable itself when no recipe is open.** That would mean
   polling the schematic form. Clicking with nothing open prints a line instead.
 
-## What has not been verified on a live client
+## What a live client has actually confirmed
 
-Everything in this repository is written against the documented shape of the
-Retail professions API and Auctionator's published v1 API. None of it has been
-confirmed against a running 12.1.0 client yet. In particular:
+Measured on 12.1.0 (interface 120100), German client, with Auctionator
+installed, from one `/cshop diag` and one button click on an alchemy recipe:
 
-- the widget paths in `Compat.SCHEMATIC_FORMS`,
-- `ProfessionsFrame.CraftingPage.CreateMultipleInputBox:GetValue()`,
-- whether `ProfessionsFrame` exists early enough for `ui.Attach` on
-  `PLAYER_LOGIN`.
+| | |
+| --- | --- |
+| All four `Auctionator.API.v1` functions | present |
+| `C_TradeSkillUI.GetRecipeSchematic` | present |
+| `Enum.CraftingReagentType.Basic` | **1**, not 0 |
+| `ProfessionsFrame` | present, and the button attached |
+| `CreateMultipleInputBox:GetValue()` | readable, returned 1 |
+| `C_Item.GetItemCount` / `GetItemInfo` / `Item` mixin | all present |
+| Reading the open recipe end to end | works — it named the recipe back |
+| Writing to the Auctionator shopping list | **works** — missing reagents appear on it |
 
-`/cshop diag` answers all three in one line each. Record what it says here
-rather than restating assumptions as fact.
+Two corrections that came out of that reading:
+
+1. **`Enum.CraftingReagentType.Basic` is 1.** 0 is widely repeated and is wrong.
+   Nothing breaks here only because the value is read by name and passed into
+   `Reagents.lua` rather than hardcoded. Do not "simplify" that away.
+2. **`GetAddOnMetadata` cannot read `Interface`.** It answers for a fixed set of
+   fields plus custom `X-` ones, so `/cshop diag` printed `addon declares ?`.
+   The TOC now carries `## X-Interface` alongside `## Interface`, and CI asserts
+   they agree.
+
+Still unconfirmed: whether `ProfessionsFrame` exists early enough for
+`ui.Attach` on `PLAYER_LOGIN`. The observed attach may have come via
+`ADDON_LOADED` instead, which would leave that path dead and unnoticed.
+
+## The first live report was "nothing lands on the list"
+
+Worth keeping, because the addon was working correctly at the time. The click
+had hit the "you already have every reagent" path: stock subtraction is on by
+default, the player had the reagents, and nothing was added. Compared against
+CraftSim — which does not subtract stock — that looks exactly like a broken
+addon.
+
+Two changes came out of it, and both are about the same thing. `/cshop preview`
+prints the need / have / short arithmetic without writing anything, and the
+"nothing was added" message now names the setting that caused it and the command
+that shows its working. **"You already have every reagent" is an answer the
+player cannot check** — it subtracts a stock count they cannot see from a
+requirement they did not state. Any future message that reports a computed
+nothing needs the same treatment.
+
+The other report in the same breath: the button moved only with shift held, and
+was therefore reported as not movable at all. It is a plain drag now. A modifier
+was never needed — `OnDragStart` fires only after the mouse moves while held, so
+a click and a drag cannot be confused.
 
 ## Branch workflow
 

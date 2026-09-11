@@ -32,6 +32,10 @@ end
 
 core.Say = say
 
+local function onOffLabel(value)
+  return value and L.SETTING_ON or L.SETTING_OFF
+end
+
 local function copyDefaults(target, defaults)
   for key, value in pairs(defaults) do
     if target[key] == nil and value ~= nil then
@@ -98,16 +102,16 @@ end
 -- searches by item name, and an uncached reagent has no name yet. Writing the
 -- list without waiting would drop exactly the reagents the player has never
 -- owned -- which are the ones they are most likely to be shopping for.
-function core.Send(countOverride)
-  if not shopping.IsAvailable() then
-    say(L.NO_AUCTIONATOR)
-    return
-  end
-
+--
+-- Reads the open recipe and works out what it needs. Shared by Send and
+-- Preview so that what you are shown is computed by the same code that does
+-- the buying, and not by a second implementation that can disagree with it.
+--
+-- Returns nil plus a message to print when there is nothing to work with.
+local function collectOpenRecipe(countOverride)
   local schematic, recipeName = compat.GetOpenRecipe()
   if not schematic then
-    say(L.NO_RECIPE)
-    return
+    return nil, L.NO_RECIPE
   end
 
   recipeName = recipeName or '?'
@@ -130,13 +134,69 @@ function core.Send(countOverride)
   })
 
   if #collected == 0 then
-    say(L.NO_REAGENTS)
+    return nil, L.NO_REAGENTS
+  end
+
+  return collected, nil, recipeName, multiplier
+end
+
+-- Prints the whole calculation without touching any shopping list: what the
+-- recipe needs, what you are holding, what is left to buy.
+--
+-- This exists because "you already have every reagent" is an answer the player
+-- cannot check. It is produced by subtracting a stock count they cannot see
+-- from a requirement they did not state, and if either number is wrong the
+-- addon looks broken rather than wrong. Showing the arithmetic is the
+-- difference between a bug report and a guess.
+function core.Preview(countOverride)
+  local collected, problem, recipeName, multiplier = collectOpenRecipe(countOverride)
+  if not collected then
+    say(problem)
+    return
+  end
+
+  local wanted = {}
+  for _, entry in ipairs(collected) do
+    wanted[#wanted + 1] = entry.itemID
+  end
+
+  compat.LoadItemNames(wanted, function(names)
+    say(L.PREVIEW_HEADER:format(multiplier, recipeName))
+
+    for _, entry in ipairs(collected) do
+      print(L.PREVIEW_LINE:format(
+        names[entry.itemID] or ('item:' .. tostring(entry.itemID)),
+        entry.need,
+        entry.have,
+        entry.missing
+      ))
+    end
+
+    print(L.PREVIEW_FOOTER:format(
+      onOffLabel(core.Get('subtractInventory')),
+      onOffLabel(core.Get('includeBank'))
+    ))
+  end)
+end
+
+function core.Send(countOverride)
+  if not shopping.IsAvailable() then
+    say(L.NO_AUCTIONATOR)
+    return
+  end
+
+  local collected, problem, recipeName, multiplier = collectOpenRecipe(countOverride)
+  if not collected then
+    say(problem)
     return
   end
 
   local missing = reagents.Missing(collected)
   if #missing == 0 then
     say(L.NOTHING_MISSING:format(multiplier, recipeName))
+    -- Naming the setting that produced this answer, and the command that shows
+    -- its arithmetic, turns a dead end into something the player can act on.
+    say(L.NOTHING_MISSING_HINT)
     return
   end
 
@@ -153,7 +213,7 @@ function core.Send(countOverride)
       local name = names[entry.itemID]
       if name then
         additions[#additions + 1] = shopping.BuildTerm(name, entry.missing)
-        lines[#lines + 1] = L.ADDED_LINE:format(name, entry.missing)
+        lines[#lines + 1] = L.ADDED_LINE:format(name, entry.missing, entry.need, entry.have)
       end
     end
 
@@ -189,22 +249,24 @@ end
 -- Slash commands
 --------------------------------------------------------------------------------
 
-local function onOff(value)
-  return value and L.SETTING_ON or L.SETTING_OFF
-end
-
 local function toggle(key, label)
   core.Set(key, not core.Get(key))
-  say(L.SETTING_CHANGED:format(label, onOff(core.Get(key))))
+  say(L.SETTING_CHANGED:format(label, onOffLabel(core.Get(key))))
 end
 
 local function diag()
   say(L.DIAG_HEADER)
 
   local build = _G.GetBuildInfo and select(4, _G.GetBuildInfo()) or '?'
+
+  -- Read from X-Interface, not Interface. GetAddOnMetadata only answers for a
+  -- fixed set of fields plus custom X- ones, and Interface is not in that set:
+  -- asking for it returns nil, which printed as "addon declares ?" on a live
+  -- client and told nobody anything. The TOC therefore carries the number
+  -- twice and CI asserts the two agree.
   local declared = '?'
   if _G.C_AddOns and _G.C_AddOns.GetAddOnMetadata then
-    declared = _G.C_AddOns.GetAddOnMetadata(ADDON, 'Interface') or '?'
+    declared = _G.C_AddOns.GetAddOnMetadata(ADDON, 'X-Interface') or '?'
   end
   print(L.DIAG_INTERFACE:format(tostring(build), tostring(declared)))
 
@@ -218,6 +280,12 @@ local function diag()
     local status = entry.ok and L.DIAG_OK or L.DIAG_MISSING
     local detail = entry.detail and (' (' .. tostring(entry.detail) .. ')') or ''
     print(('  %s  %s%s'):format(status, entry.name, detail))
+  end
+
+  -- Without this, the one probe that legitimately reports missing most of the
+  -- time reads as a fault. It is only answerable with a recipe on screen.
+  if compat.GetActiveSchematicForm() == nil then
+    print(L.DIAG_NO_RECIPE_HINT)
   end
 end
 
@@ -240,6 +308,8 @@ local function handleSlash(input)
 
   if command == '' or command == 'add' then
     core.Send(tonumber(rest))
+  elseif command == 'preview' or command == 'show' then
+    core.Preview(tonumber(rest))
   elseif command == 'list' then
     if rest == '' then
       say(L.LIST_CHANGED:format(core.Get('listName')))

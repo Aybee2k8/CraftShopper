@@ -14,7 +14,6 @@ read_globals = {
   'GetLocale',
   'UIParent',
   'GameTooltip',
-  'IsShiftKeyDown',
   'Settings',
   'C_AddOns',
   'C_Item',

@@ -55,6 +55,18 @@ jobs:
             test -f "CraftShopper/$file" || { echo "TOC names missing $file" >&2; exit 1; }
           done < <(grep '^[A-Za-z].*\.lua' CraftShopper/CraftShopper.toc | tr -d '\r')
 
+      # /cshop diag reads X-Interface, because GetAddOnMetadata cannot read
+      # Interface. Two lines holding one number drift; this refuses the drift.
+      - name: Interface and X-Interface agree
+        run: |
+          a="$(sed -n 's/^## Interface: //p' CraftShopper/CraftShopper.toc | tr -d ' \r')"
+          b="$(sed -n 's/^## X-Interface: //p' CraftShopper/CraftShopper.toc | tr -d ' \r')"
+          if [ -z "$b" ] || [ "$a" != "$b" ]; then
+            echo "Interface is '$a' but X-Interface is '$b'." >&2
+            exit 1
+          fi
+          echo "interface $a"
+
       - name: Lint
         run: luacheck .
 

@@ -13,4 +13,11 @@ First version.
 - Adds to the list rather than replacing it, leaving rows the player put there
   untouched.
 - Settings panel, slash commands (`/cshop`), and `/cshop diag`.
+- `/cshop preview`: need, stock and shortfall for the open recipe, without
+  writing to any list.
 - German and English.
+
+Measured on a live 12.1.0 client: `Enum.CraftingReagentType.Basic` is 1, not the
+widely repeated 0, and `GetAddOnMetadata` cannot read `Interface` — the TOC
+carries `X-Interface` for `/cshop diag` to report, with CI asserting the two
+agree.
