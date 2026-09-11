@@ -1,0 +1,22 @@
+package-as: CraftShopper
+
+# The addon lives in a CraftShopper/ subfolder so that a plain clone or ZIP
+# download already contains a correctly named folder to drop into
+# Interface/AddOns. The packager copies the checkout to .release/CraftShopper/,
+# which would otherwise nest as CraftShopper/CraftShopper -- this flattens it
+# back.
+move-folders:
+  CraftShopper/CraftShopper: CraftShopper
+
+enable-nolib-creation: no
+
+# Auctionator is not embedded and not required to install: the addon detects it
+# at runtime and says so plainly when it is not there.
+optional-dependencies:
+  - auctionator
+
+ignore:
+  - tests
+  - .github
+  - .luacheckrc
+  - CLAUDE.md
