@@ -1,0 +1,39 @@
+# 120100 is live Mainline; 120105 is Mainline Test (the PTR). Both are listed so
+# the addon loads on either without a second TOC -- comma-delimited interface
+# versions have been supported since 10.2.7.
+## Interface: 120100, 120105
+# The same numbers again, as a custom field. GetAddOnMetadata only answers for
+# a fixed set of fields plus X- ones, and "Interface" is not among them -- so
+# /cshop diag could not report what the addon declares and printed "?" on a
+# live client. CI asserts the two lines agree.
+## X-Interface: 120100, 120105
+## Title: CraftShopper
+## Notes: Sends the reagents of the open profession recipe to an Auctionator shopping list.
+## Notes-deDE: Schickt die Zutaten des geoeffneten Rezepts auf eine Auctionator-Einkaufsliste.
+## Author: Aybee2k8
+# A literal version, not the packager's @project-version@ placeholder: that is
+# only substituted when a release is built, so a clone or ZIP install would show
+# the placeholder itself in the addon list. Bump this with the release tag --
+# the release workflow refuses a tag that does not match.
+## Version: 0.1.0
+## SavedVariables: CraftShopperDB
+## IconTexture: Interface\Icons\INV_Misc_Note_06
+# The unlocalized fallback goes first: later entries overwrite earlier ones, so
+# a locale with no entry of its own still lands in a sensible category.
+## Category: Professions
+## Category-deDE: Berufe
+# Auctionator is listed as an optional dependency purely for load order: the
+# client loads OptionalDeps first where they are present, so its API exists by
+# the time our first click can happen. The addon degrades to a clear error
+# message when it is absent, so it is not a hard dependency.
+## OptionalDeps: Auctionator
+## AddonCompartmentFunc: CraftShopper_OnAddonCompartmentClick
+
+Locale.lua
+Compat.lua
+List.lua
+Reagents.lua
+Shopping.lua
+UI.lua
+Options.lua
+Core.lua

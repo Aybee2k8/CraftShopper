@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  lua:
+    name: Syntax and tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4 luarocks
+
+      - name: Install luacheck
+        run: sudo luarocks install luacheck
+
+      # Checked against 5.1, which is what the client runs. 5.4 accepts syntax
+      # 5.1 rejects -- the \z line continuation, for one -- and a file that only
+      # parses on 5.4 is a load-time error nobody sees, because Lua errors are
+      # hidden by default in Retail.
+      - name: Syntax check (client Lua version)
+        run: |
+          for file in CraftShopper/*.lua; do
+            luac5.1 -p "$file"
+          done
+
+      - name: Syntax check (test harness)
+        run: |
+          for file in tests/*.lua; do
+            luac5.4 -p "$file"
+          done
+
+      # The folder name has to match the TOC name, or the client will not list
+      # the addon at all. Cheap to assert, and invisible when it breaks.
+      - name: Addon folder matches its TOC
+        run: test -f CraftShopper/CraftShopper.toc
+
+      # Every Lua file the TOC names has to exist, and every Lua file that
+      # exists should be named: a file left out of the TOC is simply never
+      # loaded, which looks exactly like a bug in the code that is there.
+      - name: TOC lists every Lua file
+        run: |
+          listed="$(grep -c '^[A-Za-z].*\.lua' CraftShopper/CraftShopper.toc)"
+          present="$(ls CraftShopper/*.lua | wc -l)"
+          if [ "$listed" != "$present" ]; then
+            echo "TOC names $listed Lua files but $present are present." >&2
+            exit 1
+          fi
+          while read -r file; do
+            test -f "CraftShopper/$file" || { echo "TOC names missing $file" >&2; exit 1; }
+          done < <(grep '^[A-Za-z].*\.lua' CraftShopper/CraftShopper.toc | tr -d '\r')
+
+      # /cshop diag reads X-Interface, because GetAddOnMetadata cannot read
+      # Interface. Two lines holding one number drift; this refuses the drift.
+      - name: Interface and X-Interface agree
+        run: |
+          a="$(sed -n 's/^## Interface: //p' CraftShopper/CraftShopper.toc | tr -d ' \r')"
+          b="$(sed -n 's/^## X-Interface: //p' CraftShopper/CraftShopper.toc | tr -d ' \r')"
+          if [ -z "$b" ] || [ "$a" != "$b" ]; then
+            echo "Interface is '$a' but X-Interface is '$b'." >&2
+            exit 1
+          fi
+          echo "interface $a"
+
+      - name: Lint
+        run: luacheck .
+
+      - name: Tests
+        run: |
+          lua5.4 tests/reagents_spec.lua
+          lua5.4 tests/list_spec.lua
