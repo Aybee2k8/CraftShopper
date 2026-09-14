@@ -51,6 +51,7 @@ them back.
 | `/cshop button` | toggle the button in the profession window |
 | `/cshop reset` | put the button back where it started |
 | `/cshop diag` | report what the client and Auctionator are answering to |
+| `/cshop options` | open the settings panel |
 
 Settings are also in the interface options, under **CraftShopper**.
 

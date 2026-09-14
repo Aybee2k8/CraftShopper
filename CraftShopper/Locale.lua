@@ -58,6 +58,7 @@ local enUS = {
     '/cshop button -- toggle the button in the profession window',
     '/cshop reset -- put the button back where it started',
     '/cshop diag -- report what the client and Auctionator are answering to',
+    '/cshop options -- open the settings panel',
   },
 
   SETTING_ON = 'on',
@@ -125,6 +126,7 @@ local deDE = {
     '/cshop button -- Knopf im Berufefenster umschalten',
     '/cshop reset -- Knopf an die urspruengliche Stelle setzen',
     '/cshop diag -- ausgeben, worauf Client und Auctionator antworten',
+    '/cshop options -- Einstellungsfenster oeffnen',
   },
 
   SETTING_ON = 'an',
